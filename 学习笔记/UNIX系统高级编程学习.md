@@ -1,12 +1,5 @@
 # UNIX系统高级编程学习
 
-## 第0章 
-* gdb小工具
-    * 查看结构体定义 ptype va_list
-    * 查看内存值： x/s 0x7ffeefbffa7e
-    * 查看字符串的值 p *str@3 (如果只是p *str，只会取得首地址的char值)
-    * centos下，查看宏内容 `gcc -g3 -gdwarf-2 d_fun.c` `macro expand MAX(a, b)`
-
 ## 第一章 UNIX基础知识
 * apue.h找不到解决办法 `http://www.01happy.com/unix-advanced-programming-apue/`
 * 路径： 以斜线开头的路径名为`绝对路径名`（absolute pathname），否则称为`相对路径名`（relative pathname）
