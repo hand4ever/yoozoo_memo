@@ -1,6 +1,8 @@
 {
     "name":"hand4ever/yoozoo_memo",
+    "description": "test yoozoo memo",
     "autoload":{
+        "exclude-from-classmap": ["/tests/"],
       "psr-4":{
         "hand4ever\\yoozoo_memo\\":"src"
       }
