@@ -1,0 +1,15 @@
+{
+    "name":"pldream_work/yoozoo_memo",
+    "autoload":{
+      "psr-4":{
+        "pldream_work\\yoozoo_memo\\":"src"
+      }
+    },
+    "repositories": {
+      "redis-packagit":{
+        "type":"composer",
+        "url":"https://packagist.phpcomposer.com"
+      }
+    }
+}
+  
