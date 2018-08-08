@@ -1,8 +1,8 @@
 {
-    "name":"pldream_work/yoozoo_memo",
+    "name":"hand4ever/yoozoo_memo",
     "autoload":{
       "psr-4":{
-        "pldream_work\\yoozoo_memo\\":"src"
+        "hand4ever\\yoozoo_memo\\":"src"
       }
     },
     "repositories": {
