@@ -2,7 +2,6 @@
     "name":"hand4ever/yoozoo_memo",
     "description": "test yoozoo memo",
     "autoload":{
-        "exclude-from-classmap": ["/tests/"],
       "psr-4":{
         "hand4ever\\yoozoo_memo\\":"src"
       }
@@ -12,6 +11,11 @@
         "type":"composer",
         "url":"https://packagist.phpcomposer.com"
       }
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "1.1.1"
+        }
     }
 }
   
