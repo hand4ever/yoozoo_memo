@@ -41,8 +41,10 @@
 >
 > Union FS 是有最大层数限制的，比如 `AUFS`，目前是最大 `127` 层
 
-### 2. 使用 docker commit 命令，手动给旧的镜像添加了新的一层，形成新的镜像
+### 2. 使用 docker commit 命令
 
+> **手动给旧的镜像添加了新的一层，形成新的镜像**
+>
 > docker commit 可以在容器被入侵后后保存现场，定制镜像应该使用 Dockerfile 来完成，*慎用 docker commit*，因为这些操作是黑箱操作，除了制作的人知晓执行了什么命令，如何生成，别人无从知晓。
 
 **step 1. `docker run --name webserver -d -p 80:80 nginx`**
@@ -67,6 +69,7 @@ nginx:v2
 > 用`docker history nginx:v2`来查看镜像内的历史记录
 
 **step 4. 运行新的定制好的镜像**
+
 ```sh
 docker run --name web2 -d -p 81:80 nginx:v2
 ```
@@ -92,9 +95,9 @@ RUN echo '<h1>Hello, Docker!</h1>' > /usr/share/nginx/html/index.html
 >
 > *空白镜像* ：`scratch`；
 >
-> ​	这意味着不以任何镜像为基础，接下来所写的指令将作为镜像的第一层开始存在。
->
-> ​	     如 `swarm`、 `coreos/etcd`
+> 这意味着不以任何镜像为基础，接下来所写的指令将作为镜像的第一层开始存在。
+>	​	
+>  如 `swarm`、 `coreos/etcd`
 
 > **RUN** 执行命令
 >
@@ -122,16 +125,212 @@ Removing intermediate container 190ad3f8a2a4
  ---> 15ad186d2e09
 Successfully built 15ad186d2e09
 Successfully tagged nginx:v3
+
 ```
 
 > 命令格式 
 >
-> ​	`docker build [选项] <上下文路径>`
+>`docker build [选项] <上下文路径>`
 >
 > 工作原理
 >
-> ​	Docker 在运行时分为 Docker 引擎和客户端工具。
+> Docker 在运行时分为 Docker 引擎和客户端工具。
+> ​	
+> Docker 引擎提供了一组 REST API，被称为 Docker Remote API，而如 `docker`命，令这样的客户端工具，则是通过这组 API 与 Docker 引擎交互，来完成各种功能。因此，我们在本机上执行各种 `docker` 功能，实际上是**使用远程调用形式在服务端（Docker 引擎）完成**。
 >
-> ​	  Docker 引擎提供了一组 REST API，被称为 Docker Remote API，而如 `docker`命，令这样的客户端工具，则是通过这组 API 与 Docker 引擎交互，来完成各种功能。因此，我们在本机上执行各种 `docker`功能，实际上是**使用远程调用形式在服务端（Docker 引擎）完成**。
 >
 >
+> ##上下文目录 理解??
+
+
+
+> 其他命令
+>
+> **COPY** 复制文件 格式如下
+>	​	
+> `COPY  <源路径> ... <目标路径>`
+>	​	
+> `COPY ["<源路径1>", ... "<目标路径>"]`
+>	​	
+> **ADD** 更高级的复制文件，格式和性质与 **COPY **基本一致。
+>	​	
+> **ADD** 的源路径可以是 URL，可以是压缩包。*Dockerfile 最佳实践文档* 推荐尽量使用 COPY。
+
+
+**`docker save myweb:v4 | gzip > myweb-v4.tar.gz`**
+
+> 保存myweb:v4这个镜像
+
+**`docker load -i myweb-v4.tar.gz`**
+
+> 加载镜像 myweb-v4
+
+### 4. `docker run` 做了哪些事
+
+> 1.  检查本地是否存在制定的镜像，不存在就从公有仓库下载
+> 2.  利用镜像创建并启动一个容器
+> 3.  分配一个文件系统，并在只读的镜像层外面挂载一层可读写层
+> 4.  从宿主主机配置的网桥接口中桥接一个虚拟接口到容器中去
+> 5.  从地址池配置一个 ip 地址给容器
+> 6.  执行用户指定的应用程序
+> 7.  执行完毕后容器被终止
+
+**`docker start` **
+
+> 直接将一个已经终止的容器启动运行
+
+> 容器的核心为所执行的应用程序，所需要的资源都是应用程序运行所必需的。除此之外，并没有其他的资源。可以在伪终端中利用 `ps 和` `top` 来查看进程信息。
+>
+> *容器中仅运行了指定的 bash 应用，这样使得 Docker 对资源的利用率极高，是货真价实的轻量级虚拟化。*
+
+**后台运行（守护态运行）**
+
+> **docker run 带 -d 参数 ** 后台运行，然后使用 `docker exec <容器id>` 进入
+
+**清理所有处于终止状态的容器**
+
+> `docker container prune`
+
+### 5. docker search
+
+> `docker search centos`
+>
+> 查找官方仓库中的镜像
+
+### 6. Docker 数据管理
+
+![image-20190218152357376](../img/docker_data_mng.png)
+
+**数据卷（Volumes**）
+
+> 1. `数据卷`可以在容器之间共享和重用
+> 2. 对`数据卷`的修改会立马生效
+> 3. 对`数据卷`的更新，不会影响镜像
+> 4. `数据卷`默认会一直存在，即使容器被删除
+
+> **case 1 创建一个数据卷**
+>
+> ` docker volume create my-vol`
+>
+> **case 2 查看所有数据卷**
+>
+> `docker volume ls`
+>
+> **case 3 查看指定数据卷的信息**
+>
+> `docker volume inspect my-vol`
+>
+> **case 4 查看数据卷的具体信息**
+>
+> `docker inpect web` #数据卷信息在 ”Mounts“ 里
+
+**挂载主机目录（Bind mounts）**
+
+> `docker run --name myweb3 -d -p 81:80  --mount source=my-vol,target=/usr/share/nginx/html nginx:v2`
+>
+> 上面的命令是，加载`数据卷` my-vol 到目标目录 target后面的
+>
+> `docker run --name myweb3 -d -p 81:80  --mount source=/var/foo/bar,target=/usr/share/nginx/html nginx:v2`
+>
+> 上面的命令是，加载主机的 /var/foo/bar 目录到容器的 target后面的目录。
+
+### 7. Docker 中的网络功能介绍
+
+> Docker 允许通过外部访问容器或者容器互联的方式来提供网络服务
+
+**外部访问容器**
+
+> **-P**(大写) Docker 会随机映射一个端口到内部容器开放的网络端口。
+>
+> *demo*
+>
+> **step1**`docker run -d -P training/webapp python app.py`
+>
+> **step2** `docker ps -l`
+>
+> **step3** `docker logs -f <container name>`命令查看应用的信息
+
+
+
+> **-p**（小写）指定要映射的端口，并且，在一个指定端口上只可以绑定一个容器。支持的格式有
+>
+> ​	`ip:hostPort:containerPort | ip::containerPort | hostPort:containerPort`
+>
+> demo
+>
+> **case 1 映射所有接口地址** 使用 `hostPort:containerPort`
+>
+> `docker run -d -p 5000:5000 training/webapp python app.py`
+>
+> **case 2 映射到指定地址的指定端口** 使用 `ip:hostPort:containerPort`格式指定映射使用一个特定地址
+>
+> `docker run -d -p 127.0.0.1:5000:5000 training/webapp python app.py`
+>
+> **case 3 映射到指定地址的任意端口** 使用 `ip:containerPort` 绑定 localhost 的任意端口到容器的 5000 端口，本地主机会自动分配一个端口。
+>
+> `docker run -d -p 127.0.0.1::5000 training/webapp python app.py`
+>
+> 还可以使用 udp 标记来指定 udp 端口
+>
+> `docker run -d -p 127.0.0.1:5000:5000/udp training/webapp python app.py`
+
+**查看映射端口配置**
+
+```sh
+docker port <container name> 5000
+```
+
+> ####注意
+>
+> * 容器有自己的内部网络和 ip 地址（使用 docker inspect 可以获取所有的变量）
+>
+> * `-p`标记可以多次使用来绑定多个端口
+>
+>   ```sh
+>   docker run -d \
+>   	-p 5000:5000 \
+>   	-p 3000:80 \
+>   	training/webapp \
+>   	python app.py
+>   ```
+
+**容器互联**
+
+> #### 新建网络
+>
+> `docker network create -d bridge my-net`
+>
+> `-d` 参数指定 Docker 网络类型，有`bridge` `overlay`。其中 `overlay` 网络类型用于 Swarm mode，暂忽略。
+>
+> #### 连接容器
+>
+> `docker run -it --rm --name busybox1 --network my-net busybox sh`
+>
+> 运行一个容器并连接到新建的 `my-net` 网络
+>
+> 再运行一个容器并加入到 `my-net` 网络
+>
+> `docker run -it --rm --name busybox2 --network my-net busybox sh`
+>
+> #### 测试连通性
+>
+> 在 `busybox1` 输入以下命令
+>
+> `ping busybox2`
+>
+> 同理在 `busybox2` 中`ping busybox1`
+
+### 8. Docker Compose 项目
+
+> *`Compose` 项目是 Docker 官方的开源项目，项目由 Python 编写，实现上调用了 Docker 服务提供的 API 来对容器进行管理。负责实现对 Docker 容器集群的快速编排。*
+>
+> 项目地址：`https://github.com/docker/compose`
+>
+> `Compose` 允许用户通过一个单独的 `docker-compose.yml` 模版文件（YAML格式）来定义一组相关联的应用容器为一个项目（project）
+
+
+> *`Compose` 中有两个重要的概念*
+>
+> * 服务（`service`）：一个应用的容器，实际上可以包括若干运行相同镜像的容器实例。
+> * 项目（`project`）：由一组关联的应用容器组成的一个完整业务单元，在 `docker-compose.yml` 文件中定义。
+
