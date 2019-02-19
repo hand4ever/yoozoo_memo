@@ -392,12 +392,12 @@ docker port <container name> 5000
 version: "3"
 
 services:
-	webapp:
-		image: examples/web
-		ports:
-			- "80:80"
-		volumes:
-			- "/data"
+    webapp:
+        image: examples/web
+        ports:
+            - "80:80"
+        volumes:
+            - "/data"
 ```
 
 （以上）
