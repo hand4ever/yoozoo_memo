@@ -1,6 +1,6 @@
-## docker pratice 学习
+# docker pratice 学习笔记
 
-### 1. 几个 docker 相关解释
+## 1. 几个 docker 相关解释
 
 **`docker run -it --rm ubuntu:16.04 bash`**
 
@@ -41,7 +41,7 @@
 >
 > Union FS 是有最大层数限制的，比如 `AUFS`，目前是最大 `127` 层
 
-### 2. 使用 docker commit 命令
+## 2. 使用 docker commit 命令
 
 > **手动给旧的镜像添加了新的一层，形成新的镜像**
 >
@@ -74,7 +74,7 @@ nginx:v2
 docker run --name web2 -d -p 81:80 nginx:v2
 ```
 
-### 3. 使用 Dockerfile 定制镜像
+## 3. 使用 Dockerfile 定制镜像
 
 > Dockerfile 本身是一个文本文件，其内容包含了一条条指令，每一条指令构建一层。
 
@@ -130,30 +130,57 @@ Successfully tagged nginx:v3
 
 > 命令格式 
 >
->`docker build [选项] <上下文路径>`
+> `docker build [选项] <上下文路径>`
 >
 > 工作原理
 >
 > Docker 在运行时分为 Docker 引擎和客户端工具。
 > ​	
 > Docker 引擎提供了一组 REST API，被称为 Docker Remote API，而如 `docker`命，令这样的客户端工具，则是通过这组 API 与 Docker 引擎交互，来完成各种功能。因此，我们在本机上执行各种 `docker` 功能，实际上是**使用远程调用形式在服务端（Docker 引擎）完成**。
->
->
->
-> ##上下文目录 理解??
 
 
 
-> 其他命令
+> ###上下文目录 理解
+
+**对 Docker 构建上下文的理解误区**
+
+> 构建步骤
+> 1. 跳到 Dockerfile 所在目录
+> 2. 执行 docker build 命令
+`docker build -t <imageName:imageTag> .`
+
+> 上面的命令的理解误区
 >
+> `误区1` `docker build` 后面的 `.` 为 Dockerfile 所在的目录
+>
+> `误区2` Dockerfile 文件名不能更改
+
+**docker build 构建镜像的流程大致如下**
+
+> 1. 执行 `docker build -t <imageName:imageTag> .`
+> 2. Docker 客户端会将构建命令后面指定的路径(`.`)下的所有文件打包成一个 tar 包，发送给 Docker 服务端
+> 3. Docker 服务端收到客户端发送的 tar 包，然后解压，根据 Dockerfile 里面的指令进行镜像的分层构建
+
+![docker build](../img/docker_build.png)
+
+**关于 `docker build` 指令的几点重要的说明**
+
+> 1. 如果构建镜像时没有明确指定 Dockerfile，那么 Docker 客户端默认在构建镜像时指定的上下文路径下找名字为 Dockefile 的构建文件
+> 2. 可以通过 `-f`指定构建文件，名称可以任意命令
+> 3. **Dockerfile 中指令的工作目录是服务器解压客户端传输的 tar 包的路径**
+
+
+
+> ### 其他命令
+
 > **COPY** 复制文件 格式如下
->	​	
+> ​	
 > `COPY  <源路径> ... <目标路径>`
->	​	
+> ​	
 > `COPY ["<源路径1>", ... "<目标路径>"]`
->	​	
+> ​	
 > **ADD** 更高级的复制文件，格式和性质与 **COPY **基本一致。
->	​	
+> ​	
 > **ADD** 的源路径可以是 URL，可以是压缩包。*Dockerfile 最佳实践文档* 推荐尽量使用 COPY。
 
 
@@ -165,7 +192,7 @@ Successfully tagged nginx:v3
 
 > 加载镜像 myweb-v4
 
-### 4. `docker run` 做了哪些事
+## 4. `docker run` 做了哪些事
 
 > 1.  检查本地是否存在制定的镜像，不存在就从公有仓库下载
 > 2.  利用镜像创建并启动一个容器
@@ -191,13 +218,13 @@ Successfully tagged nginx:v3
 
 > `docker container prune`
 
-### 5. docker search
+## 5. docker search
 
 > `docker search centos`
 >
 > 查找官方仓库中的镜像
 
-### 6. Docker 数据管理
+## 6. Docker 数据管理
 
 ![image-20190218152357376](../img/docker_data_mng.png)
 
@@ -234,7 +261,7 @@ Successfully tagged nginx:v3
 >
 > 上面的命令是，加载主机的 /var/foo/bar 目录到容器的 target后面的目录。
 
-### 7. Docker 中的网络功能介绍
+## 7. Docker 中的网络功能介绍
 
 > Docker 允许通过外部访问容器或者容器互联的方式来提供网络服务
 
@@ -320,7 +347,7 @@ docker port <container name> 5000
 >
 > 同理在 `busybox2` 中`ping busybox1`
 
-### 8. Docker Compose 项目
+## 8. Docker Compose 项目
 
 > *`Compose` 项目是 Docker 官方的开源项目，项目由 Python 编写，实现上调用了 Docker 服务提供的 API 来对容器进行管理。负责实现对 Docker 容器集群的快速编排。*
 >
@@ -334,3 +361,43 @@ docker port <container name> 5000
 > * 服务（`service`）：一个应用的容器，实际上可以包括若干运行相同镜像的容器实例。
 > * 项目（`project`）：由一组关联的应用容器组成的一个完整业务单元，在 `docker-compose.yml` 文件中定义。
 
+**`docker-compose --version`**
+
+> 查看 docker compose 版本信息
+>
+> 结果如下：
+>
+> ```sh
+> docker-compose version 1.23.2, build 1110ad01
+> ```
+
+**`docker-compose version`**
+
+> 查看 compose 相关版本信息
+>
+> 结果如下：
+>
+> ```
+> docker-compose version 1.23.2, build 1110ad01
+> docker-py version: 3.6.0
+> CPython version: 3.6.6
+> OpenSSL version: OpenSSL 1.1.0h  27 Mar 2018
+> ```
+
+**Compose 模板文件** 
+
+> demo 如下
+
+```yaml
+version: "3"
+
+services:
+	webapp:
+		image: examples/web
+		ports:
+			- "80:80"
+		volumes:
+			- "/data"
+```
+
+（以上）
