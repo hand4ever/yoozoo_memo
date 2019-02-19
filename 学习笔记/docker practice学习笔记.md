@@ -49,7 +49,7 @@
 
 **step 1. `docker run --name webserver -d -p 80:80 nginx`**
 
-> 启动一个容器，命令为 webserver，并且映射了 80 端口，然后用 http://localhost/ 来访问
+> 启动一个容器，命令为 webserver，并且映射了 80 端口，然后用 `http://localhost/` 来访问
 
 **step 2. `docker exec -it webserver bash`**
 
@@ -83,6 +83,7 @@ docker run --name web2 -d -p 81:80 nginx:v2
 ```dockerfile
 FROM nginx
 RUN echo '<h1>Hello, Docker!</h1>' > /usr/share/nginx/html/index.html
+
 ```
 
 > `必须` **FROM** 指定基础镜像
@@ -182,7 +183,6 @@ Successfully tagged nginx:v3
 > **ADD** 更高级的复制文件，格式和性质与 **COPY **基本一致。
 > ​	
 > **ADD** 的源路径可以是 URL，可以是压缩包。*Dockerfile 最佳实践文档* 推荐尽量使用 COPY。
-
 
 **`docker save myweb:v4 | gzip > myweb-v4.tar.gz`**
 
