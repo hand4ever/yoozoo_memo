@@ -14,6 +14,10 @@
 >
 > bash 命令
 
+**`docker exec -it --name root logstash_2 bash`**
+
+> `--name` 后面跟 docker 容器的 用户，本例以 `root` 用户进入容器
+
 **`docker system df`**
 
 > 查看镜像、容器、数据卷所占用的空间
