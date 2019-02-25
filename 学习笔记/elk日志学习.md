@@ -255,40 +255,32 @@ output.console:
 
 ### 4.1 etcd 安装
 
-> **step 1 Docker 安装**
+> **step 1 安装**
+>
+> 直接下载相应操作系统相应版本的压缩包
+>
+> `https://github.com/etcd-io/etcd/releases/download/v3.3.12/etcd-v3.3.12-darwin-amd64.zip`
+>
+> 解压到 `/Users/panlong/etc/etcd`即可
 
-###### Docker
 
-etcd uses [`gcr.io/etcd-development/etcd`](https://gcr.io/etcd-development/etcd) as a primary container registry, and [`quay.io/coreos/etcd`](https://quay.io/coreos/etcd) as secondary.
 
 ```shell
-rm -rf /tmp/etcd-data.tmp && mkdir -p /tmp/etcd-data.tmp && \
-  docker rmi quay.io/coreos/etcd:v3.3.12 || true && \
-  docker run \
-  -p 2379:2379 \
-  -p 2380:2380 \
-  --mount type=bind,source=/tmp/etcd-data.tmp,destination=/etcd-data \
-  --name etcd-gcr-v3.3.12 \
-  gcr.io/etcd-development/etcd:v3.3.12 \
-  /usr/local/bin/etcd \
-  --name s1 \
-  --data-dir /etcd-data \
-  --listen-client-urls http://0.0.0.0:2379 \
-  --advertise-client-urls http://0.0.0.0:2379 \
-  --listen-peer-urls http://0.0.0.0:2380 \
-  --initial-advertise-peer-urls http://0.0.0.0:2380 \
-  --initial-cluster s1=http://0.0.0.0:2380 \
-  --initial-cluster-token tkn \
-  --initial-cluster-state new
 
-docker exec etcd-gcr-v3.3.12 /bin/sh -c "/usr/local/bin/etcd --version"
-docker exec etcd-gcr-v3.3.12 /bin/sh -c "ETCDCTL_API=3 /usr/local/bin/etcdctl version"
-docker exec etcd-gcr-v3.3.12 /bin/sh -c "ETCDCTL_API=3 /usr/local/bin/etcdctl endpoint health"
-docker exec etcd-gcr-v3.3.12 /bin/sh -c "ETCDCTL_API=3 /usr/local/bin/etcdctl put foo bar"
-docker exec etcd-gcr-v3.3.12 /bin/sh -c "ETCDCTL_API=3 /usr/local/bin/etcdctl get foo"
 ```
 
 ### 4.2 etcd 运行、测试demo
+
+> 直接 cd 到 etcd 的安装目录下，执行 `./etcd`
+>
+> 测试如下：
+
+```
+./etcdctl set name zhangsan
+./etcdctl get name
+```
+
+
 
 ## 5. confd 安装使用
 
@@ -428,6 +420,10 @@ openssl ca -in userreq.pem -out usercert.pem -config /usr/local/etc/openssl/open
 ```
 ### 6.3 查看证书内容
 `openssl x509 -in usercert.pem -text -noout`
+
+> 证书转换
+>
+> `openSSL pkcs8 -in certificatename.pem -topk8 -nocrypt -out certificatename.pk8`
 
 
 
