@@ -333,9 +333,13 @@ Desktop	boot	etc	lib	lib64	media	opt	root	sbin	sys	usr
 bin	dev	home	lib32	libx32	mnt	proc	run	srv	tmp	var
 ```
 > **mac下还有个进入setting must be set within the xhyve virtual machine**
+> 
 > `screen ~/Library/Containers/com.docker.docker/Data/vms/0/tty`
+> 
 > detach screen `ctl+a d`
+> 
 > 列出 screen `screen -ls`
+> 
 > 删除 detached 的 screen `screen -X -S sessionid quit`
 
 ## 7. Docker 中的网络功能介绍
