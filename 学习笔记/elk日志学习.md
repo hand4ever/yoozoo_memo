@@ -329,13 +329,9 @@ keys = [
 > `touch ~/etc/confd/templates/myconfig.conf.tmpl`
 
 ```toml
-[template]
-src = "myconfig.conf.tmpl"
-dest = "/tmp/myconfig.conf"
-keys = [
-    "/myapp/database/url",
-    "/myapp/database/user",
-]
+[myconfig]
+database_url = {{getv "/myapp/database/url"}}
+database_user = {{getv "/myapp/database/user"}}
 ```
 
 > **step 4 运行模板（Process the template）**

@@ -2,7 +2,9 @@
 
 ## 1. 几个 docker 相关解释
 
-**`docker run -it --rm ubuntu:16.04 bash`**
+### 1.1 docker 命令
+
+**`1. docker run -it --rm ubuntu:16.04 bash`**
 
 > -i: 交互式操作
 >
@@ -14,36 +16,84 @@
 >
 > bash 命令
 
-**`docker exec -it --name root logstash_2 bash`**
+**`2. docker exec -it --name root logstash_2 bash`**
 
 > `--name` 后面跟 docker 容器的 用户，本例以 `root` 用户进入容器
 
-**`docker system df`**
+**`3. docker system df`**
 
 > 查看镜像、容器、数据卷所占用的空间
 
-**`docker image ls -f dangling=true`**
+**`4. docker image ls -f dangling=true`**
 
 > 显示虚悬镜像，同名pull或者build后被挤下为<none>的景象
 > 可以用 `docker image prune`命令删除 dangling image
 
-**`docker image ls -q`**
+**`5. docker image ls -q`**
 
 > 列出所有镜像 id
 
-**分层存储**
+**`6. docker cp welcome.html mywebv3://usr/share/nginx/html/`**
 
-> **Docker镜像**
+> 将本地文件 `welcome.html` 拷贝到容器 名为 `mywebv3` （此处用容器id也可以）的 `/usr/share/nginx/html/`目录下。
+
+**`7. docker port [CONTAINER]`**
+
+> 打印出容器的端口映射关系
+
+**`8. docker network inspect bridge`**
+
+> `bridge `网络是容器运行的默认网络，该命令是用来检查 `bridge` 网络的明细
+>
+> 此处看到的
+
+```json
+
+"Containers": {
+    "50602df80db...": {
+        "Name": "myesv3",
+        "EndpointID": "1110b18e3baa...",
+        "MacAddress": "02:42:ac:11:00:02",
+        "IPv4Address": "172.17.0.2/16",
+        "IPv6Address": ""
+    }
+}
+```
+
+> 我的 es 的容器运行的容器 ip 是 `172.17.0.2`，进入容器后（`docker exec -it myesv3 bash`)，运行 `curl 172.17.0.2:9200`，可以看到输出结果。
+
+**`9. docker top CONTAINER`**
+
+> 显示容器的进程信息
+
+**`10. docker export $(docker create nginx) > nginx.tar`**
+
+> 导出容器镜像的 rootfs 的文件压缩包，命名为 nginx.tar。
+
+### 1.2 分层存储
+
+**根文件系统**
+> `简介` 根文件系统首先是内核启动时所mount的第一个文件系统，内核代码映像文件保存在根文件系统中，而系统引导启动程序会在根文件系统挂载之后从中把一些基本的初始化脚本和服务等加载到内存中去运行。
+> `什么是文件系统` 文件系统是对一个存储设备上的数据和元数据进行组织的机制。这种机制有利于用户和操作系统的交互。“尽管内核是 Linux 的核心，但文件却是用户与操作系统交互所采用的主要工具。这对 Linux 来说尤其如此，这是因为在 UNIX 传统中，它使用文件 I/O 机制管理硬件设备和数据文件”
+
+
+
+
+**Docker镜像**
 >
 > 操作系统分为*内核*和*用户空间*，对于 Linux 而言，内核启动后，会挂载 `root 文件系统`为其提供用户空间支持。Docker 镜像，就相当于是一个 `root 文件系统`，除了提供容器运行时所需的程序、库、资源、配置等文件外，还包含一些为运行时准备的配置参数（如 匿名卷、环境变量、用户等）。镜像不包含任何动态数据，其内容在构建后也不会被改变。
->
-> **分层存储**
+
+**分层存储**
 >
 > 利用 Union FS 技术，Docker 设计为分层存储的架构。
 >
 > 镜像在构建时，会一层层构建，前一层是后一层的基础。每一层构建完就不会再发生改变，后一层的任何改变只发生在自己这一层。在构建镜像时，尽量只包含该层需要添加的东西，任何额外的东西应该在该层构建结束前清理掉。
 >
 > Union FS 是有最大层数限制的，比如 `AUFS`，目前是最大 `127` 层
+
+### bridge 网络
+
+> docker 在安装的时候会自动安装一个 `docker0` 的 linux bridge 网络，如果不指定容器的 `--network`，容器默认都会挂到 `docker0` 上 
 
 ## 2. 使用 docker commit 命令
 
@@ -206,7 +256,7 @@ Successfully tagged nginx:v3
 > 6.  执行用户指定的应用程序
 > 7.  执行完毕后容器被终止
 
-**`docker start` **
+**`docker start`**
 
 > 直接将一个已经终止的容器启动运行
 
@@ -216,7 +266,7 @@ Successfully tagged nginx:v3
 
 **后台运行（守护态运行）**
 
-> **docker run 带 -d 参数 ** 后台运行，然后使用 `docker exec <容器id>` 进入
+> **docker run 带 -d 参数** 后台运行，然后使用 `docker exec <容器id>` 进入
 
 **清理所有处于终止状态的容器**
 
@@ -264,6 +314,29 @@ Successfully tagged nginx:v3
 > `docker run --name myweb3 -d -p 81:80  --mount source=/var/foo/bar,target=/usr/share/nginx/html nginx:v2`
 >
 > 上面的命令是，加载主机的 /var/foo/bar 目录到容器的 target后面的目录。
+
+> **mac 下特殊处理：File system sharing (osxfs)** 
+>
+> 摘自：https://docs.docker.com/docker-for-mac/osxfs/#namespaces
+
+> Much of the macOS file system that is accessible to the user is also available to containers using the `-v` bind mount syntax. The following command runs a container from an image called `r-base` and shares the macOS user’s `~/Desktop/` directory as `/Desktop` in the container.
+
+```
+$ docker run -it -v ~/Desktop:/Desktop r-base bash
+```
+
+> The user’s `~/Desktop/` directory is now visible in the container as a directory under `/`.
+
+```
+root@2h30fa0c600e:/# ls
+Desktop	boot	etc	lib	lib64	media	opt	root	sbin	sys	usr
+bin	dev	home	lib32	libx32	mnt	proc	run	srv	tmp	var
+```
+> **mac下还有个进入setting must be set within the xhyve virtual machine**
+> `screen ~/Library/Containers/com.docker.docker/Data/vms/0/tty`
+> detach screen `ctl+a d`
+> 列出 screen `screen -ls`
+> 删除 detached 的 screen `screen -X -S sessionid quit`
 
 ## 7. Docker 中的网络功能介绍
 
@@ -404,4 +477,16 @@ services:
             - "/data"
 ```
 
-（以上）
+
+
+## 9. 几个有用的 docker 镜像
+
+| 镜像                                                         | 备注                                                         |
+| ------------------------------------------------------------ | ------------------------------------------------------------ |
+| [alpine](https://yeasy.gitbooks.io/docker_practice/cases/os/alpine.html) | 面向安全的轻型 `Linux` 发行版，功能上比 `busybox` 又完善的多 |
+| [busybox](https://yeasy.gitbooks.io/docker_practice/cases/os/busybox.html) | BusyBox 是一个集成了一百多个最常用 Linux 命令和工具（如 cat、echo、grep、mount、telnet 等）的精简工具箱，它只需要几 MB 的大小，很方便进行各种快速验证，被誉为“Linux 系统的瑞士军刀”。<br />[playing-with-busybox](https://docker-curriculum.com/#playing-with-busybox) |
+|                                                              |                                                              |
+|                                                              |                                                              |
+
+
+##（以上）
